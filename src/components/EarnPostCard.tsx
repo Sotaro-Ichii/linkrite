@@ -1,18 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { timeAgo } from "@/lib/utils";
-import { FaYoutube, FaTwitter, FaInstagram, FaTiktok } from 'react-icons/fa';
 import { useState } from "react";
-
-const platformIcons: { [key: string]: React.ReactNode } = {
-  YouTube: <FaYoutube className="text-red-500" />,
-  Twitter: <FaTwitter className="text-blue-400" />,
-  X: <FaTwitter className="text-gray-800" />,
-  Instagram: <FaInstagram className="text-pink-500" />,
-  Tiktok: <FaTiktok className="text-black" />,
-};
 
 export default function EarnPostCard({ post }: { post: any }) {
   const [imageError, setImageError] = useState(false);
@@ -34,96 +23,91 @@ export default function EarnPostCard({ post }: { post: any }) {
     }
   };
 
-  const getPlatformColor = (platform: string) => {
+  const getPlatformBadgeClass = (platform: string) => {
     switch (platform) {
       case "YouTube":
-        return "bg-red-500";
+        return "platform-badge platform-youtube";
       case "TikTok":
-        return "bg-black";
+        return "platform-badge platform-tiktok";
       case "Instagram":
-        return "bg-gradient-to-r from-purple-500 to-pink-500";
+        return "platform-badge platform-instagram";
       default:
-        return "bg-gray-500";
+        return "platform-badge bg-gray-500";
     }
   };
 
-  const paidOut = post.paidOut ?? 0;
-  const totalBudget = post.totalBudget ?? Number(post.budget) ?? 0;
-  const percentage = totalBudget > 0 ? (paidOut / totalBudget) * 100 : 0;
-  const createdAtDate = post.createdAt?.toDate();
+  const progressPercentage = Math.min((post.currentAmount || 0) / (post.budget || 1) * 100, 100);
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4 shadow-sm hover:shadow-md transition-shadow duration-300">
-      <div className="flex items-center mb-3">
-        <Link href={`/profile/${post.authorId}`}>
-          <Image
-            src={imageError ? "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e5e7eb'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='%236b7280' font-size='16'%3E👤%3C/text%3E%3C/svg%3E" : (post.authorPhotoURL || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e5e7eb'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='%236b7280' font-size='16'%3E👤%3C/text%3E%3C/svg%3E")}
-            alt={post.authorName}
-            width={40}
-            height={40}
-            className="rounded-full mr-3"
-            onError={handleImageError}
-          />
-        </Link>
-        <div className="flex-grow">
-          <p className="font-bold text-gray-800 dark:text-gray-200">{post.title}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            <Link href={`/profile/${post.authorId}`} className="hover:underline">
-              {post.authorName}
+    <div className="card card-hover overflow-hidden">
+      <div className="p-6">
+        {/* ヘッダー */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <Link href={`/profile/${post.authorId}`}>
+              <img
+                src={imageError ? "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e5e7eb'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='%236b7280' font-size='16'%3E👤%3C/text%3E%3C/svg%3E" : (post.authorPhotoURL || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e5e7eb'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='%236b7280' font-size='16'%3E👤%3C/text%3E%3C/svg%3E")}
+                alt="Profile"
+                className="w-10 h-10 rounded-full object-cover border-2 border-gray-100"
+                onError={handleImageError}
+              />
             </Link>
-          </p>
-        </div>
-        <p className="text-xs text-gray-400 dark:text-gray-500">
-          {createdAtDate ? timeAgo(createdAtDate) : ""}
-        </p>
-      </div>
-
-      <div className="mb-4">
-        <div className="flex justify-between items-center text-sm mb-1">
-          <p className="text-gray-600 dark:text-gray-300">
-            ${paidOut.toLocaleString()} of ${totalBudget.toLocaleString()} paid out
-          </p>
-          <p className="font-semibold text-gray-700 dark:text-gray-200">{percentage.toFixed(0)}%</p>
-        </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          <div
-            className="bg-orange-500 h-2 rounded-full"
-            style={{ width: `${percentage}%` }}
-          ></div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4 text-center mb-4">
-        <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Type</p>
-          <p className="font-semibold text-gray-800 dark:text-gray-200">{post.type}</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Platform</p>
-          <div className="flex justify-center items-center text-2xl">
-            {platformIcons[post.platform] || <p className="font-semibold text-sm">{post.platform}</p>}
+            <div>
+              <h3 className="font-semibold text-gray-900 text-sm">{post.authorName || "匿名"}</h3>
+              <p className="text-xs text-gray-500">{post.platform}</p>
+            </div>
+          </div>
+          <div className={getPlatformBadgeClass(post.platform)}>
+            {getPlatformIcon(post.platform)}
           </div>
         </div>
-        <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Reward</p>
-          <div className="bg-blue-600 text-white text-sm font-bold rounded-md px-3 py-1 inline-block">
-            {post.reward}
+
+        {/* タイトルと説明 */}
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{post.title}</h2>
+          <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">{post.description}</p>
+        </div>
+
+        {/* 予算と進捗 */}
+        <div className="space-y-3 mb-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium text-gray-700">予算</span>
+            <span className="font-bold text-lg gradient-text">¥{post.budget?.toLocaleString() || "0"}</span>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>進捗</span>
+              <span>{progressPercentage.toFixed(1)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div 
+                className="h-2 rounded-full transition-all duration-500 ease-out"
+                style={{ 
+                  width: `${progressPercentage}%`,
+                  background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'
+                }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>現在: ¥{(post.currentAmount || 0).toLocaleString()}</span>
+              <span>目標: ¥{(post.budget || 0).toLocaleString()}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between items-center">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
-          <Link href={`/earn/${post.id}`} className="hover:underline">
-            詳細と応募はこちら
+        {/* フッター */}
+        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+          <span className="text-xs text-gray-500">
+            {post.createdAt?.toDate ? post.createdAt.toDate().toLocaleDateString() : "日付不明"}
+          </span>
+          <Link 
+            href={`/earn/${post.id}`}
+            className="btn-primary text-sm px-4 py-2"
+          >
+            詳細を見る
           </Link>
-        </p>
-        {/*
-        <div className="flex items-center">
-          <span className="h-2 w-2 bg-green-500 rounded-full mr-2"></span>
-          <p className="text-xs text-gray-500">0 online</p>
         </div>
-        */}
       </div>
     </div>
   );

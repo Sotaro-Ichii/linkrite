@@ -1,63 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { db, auth, googleProvider } from "@/lib/firebase";
+import { useState, useEffect } from "react";
+import { db, auth } from "@/lib/firebase";
 import {
   collection,
   addDoc,
   serverTimestamp,
-  onSnapshot,
   query,
   orderBy,
-  setDoc,
-  doc,
-  where,
+  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
 import { onAuthStateChanged, signInWithRedirect, signOut, GoogleAuthProvider } from "firebase/auth";
 import Link from "next/link";
 import EarnPostCard from "@/components/EarnPostCard";
 
 export default function HomePage() {
-  const [tab, setTab] = useState<"feed" | "earn" | "learn">("feed");
-  const [showModal, setShowModal] = useState(false);
-  const [showLearnModal, setShowLearnModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [budget, setBudget] = useState("");
+  const [platform, setPlatform] = useState("YouTube");
   const [searchTerm, setSearchTerm] = useState("");
-  const [platformFilter, setPlatformFilter] = useState("");
-
-  const [form, setForm] = useState({
-    title: "",
-    budget: "",
-    description: "",
-    platform: "",
-    reward: "",
-    type: "Clipping",
-  });
-
-  const [learnForm, setLearnForm] = useState({
-    title: "",
-    outline: "",
-    description: "",
-    price: "",
-  });
-
-  const [earnPosts, setEarnPosts] = useState<any[]>([]);
-  const [learnPosts, setLearnPosts] = useState<any[]>([]);
-  const [applications, setApplications] = useState<any[]>([]);
-
-  // フィルタリングされた投稿
-  const filteredEarnPosts = earnPosts.filter((post) => {
-    const matchesSearch = searchTerm === "" || 
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesPlatform = platformFilter === "" || post.platform === platformFilter;
-    
-    return matchesSearch && matchesPlatform;
-  });
-
-  // 利用可能なプラットフォーム一覧
-  const availablePlatforms = Array.from(new Set(earnPosts.map(post => post.platform))).filter(Boolean);
+  const [selectedPlatform, setSelectedPlatform] = useState("all");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -68,28 +34,15 @@ export default function HomePage() {
 
   useEffect(() => {
     const q = query(collection(db, "earnPosts"), orderBy("createdAt", "desc"));
-    return onSnapshot(q, (snapshot) => {
-      setEarnPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const postsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPosts(postsData);
     });
+    return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    const q = query(collection(db, "learnPosts"), orderBy("createdAt", "desc"));
-    return onSnapshot(q, (snapshot) => {
-      setLearnPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    const q = query(
-      collection(db, "applications"),
-      where("applicantUid", "==", currentUser.uid)
-    );
-    return onSnapshot(q, (snapshot) => {
-      setApplications(snapshot.docs.map((doc) => doc.data()));
-    });
-  }, [currentUser]);
 
   const handleGoogleLogin = async () => {
     const googleProvider = new GoogleAuthProvider();
@@ -103,234 +56,192 @@ export default function HomePage() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-    } catch (err: any) {
-      alert("ログアウトに失敗しました: " + err.message);
+    } catch (error) {
+      console.error("Logout error:", error);
     }
   };
 
-  const handlePost = async () => {
-    if (!currentUser) return alert("ログインが必要です。");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("ログインしてください。");
+      return;
+    }
 
     try {
-      await setDoc(doc(db, "users", currentUser.uid), {
-        uid: currentUser.uid,
-        displayName: currentUser.displayName || "匿名",
-        photoURL: currentUser.photoURL,
-        email: currentUser.email,
-      }, { merge: true });
-
       await addDoc(collection(db, "earnPosts"), {
-        ...form,
-        totalBudget: Number(form.budget) || 0,
-        paidOut: 0,
-        createdAt: serverTimestamp(),
+        title,
+        description,
+        budget: parseInt(budget),
+        platform,
         authorId: currentUser.uid,
         authorName: currentUser.displayName || "匿名",
+        photoURL: currentUser.photoURL,
         authorPhotoURL: currentUser.photoURL || "",
-      });
-
-      alert("案件が保存されました！");
-      setShowModal(false);
-      setForm({ title: "", budget: "", description: "", platform: "", reward: "", type: "Clipping" });
-    } catch (err: any) {
-      alert("エラー：" + err.message);
-    }
-  };
-
-  const handleLearnPost = async () => {
-    if (!currentUser) return alert("ログインが必要です。");
-
-    try {
-      await setDoc(doc(db, "users", currentUser.uid), {
-        displayName: currentUser.displayName || "匿名",
-      });
-
-      await addDoc(collection(db, "learnPosts"), {
-        ...learnForm,
         createdAt: serverTimestamp(),
-        authorId: currentUser.uid,
-        authorName: currentUser.displayName || "匿名",
+        currentAmount: 0,
+        totalBudget: parseInt(budget),
+        paidOut: 0,
       });
 
-      alert("教材が保存されました！");
-      setShowLearnModal(false);
-      setLearnForm({ title: "", outline: "", description: "", price: "" });
-    } catch (err: any) {
-      alert("エラー：" + err.message);
+      setTitle("");
+      setDescription("");
+      setBudget("");
+      setPlatform("YouTube");
+    } catch (error) {
+      console.error("Error adding document: ", error);
     }
   };
 
-  const handleApply = async (postId: string) => {
-    if (!currentUser) return alert("ログインが必要です。");
-
-    try {
-      await addDoc(collection(db, "applications"), {
-        postId,
-        applicantUid: currentUser.uid,
-        applicantName: currentUser.displayName || "匿名",
-        appliedAt: new Date(),
-        status: "pending",
-      });
-      alert("応募が完了しました！");
-    } catch (err: any) {
-      alert("応募に失敗しました: " + err.message);
-    }
-  };
+  const filteredPosts = posts.filter((post) => {
+    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesPlatform = selectedPlatform === "all" || post.platform === selectedPlatform;
+    return matchesSearch && matchesPlatform;
+  });
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Linkrite</h1>
-        {currentUser ? (
-          <div className="flex items-center space-x-4">
-            <Link href={`/profile/${currentUser.uid}`} className="text-blue-600 hover:underline">
-              プロフィール
-            </Link>
-            <button onClick={handleLogout} className="bg-red-600 text-white px-4 py-1 rounded">
-              ログアウト
-            </button>
-          </div>
-        ) : (
-          <button onClick={handleGoogleLogin} className="bg-blue-600 text-white px-4 py-1 rounded">
-            Googleでログイン
-          </button>
-        )}
-      </div>
-
-      <div className="flex gap-4 mb-6">
-        {(["feed", "earn", "learn"] as const).map((name) => (
-          <button
-            key={name}
-            className={`px-4 py-2 rounded ${tab === name ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-            onClick={() => setTab(name)}
-          >
-            {name === "feed" ? "フィード" : name === "earn" ? "稼ぐ" : "学ぶ"}
-          </button>
-        ))}
-      </div>
-
-      {/* フィード */}
-      {tab === "feed" && (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">フィード投稿（例）</h2>
-          <p>🌟 「クリエイターA」が新しい案件を投稿しました！</p>
-        </div>
-      )}
-
-      {/* 稼ぐ */}
-      {tab === "earn" && (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">案件一覧</h2>
-            <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => setShowModal(true)}>
-              ＋ 投稿
-            </button>
-          </div>
-
-          {/* 検索・フィルター */}
-          <div className="mb-6 space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        {/* ヘッダー */}
+        <div className="card p-6 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
+              <h1 className="text-3xl font-bold gradient-text mb-2">Linkrite</h1>
+              <p className="text-gray-600">クリエイターと編集者をつなぐプラットフォーム</p>
+            </div>
+            {currentUser ? (
+              <div className="flex items-center space-x-4">
+                <Link href={`/profile/${currentUser.uid}`} className="btn-ghost">
+                  <div className="flex items-center space-x-2">
+                    <img 
+                      src={currentUser.photoURL || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%23e5e7eb'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='%236b7280' font-size='12'%3E👤%3C/text%3E%3C/svg%3E"} 
+                      alt="Profile" 
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <span>{currentUser.displayName}</span>
+                  </div>
+                </Link>
+                <button onClick={handleLogout} className="btn-secondary">
+                  ログアウト
+                </button>
+              </div>
+            ) : (
+              <button onClick={handleGoogleLogin} className="btn-primary">
+                Googleでログイン
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 検索・フィルター */}
+        <div className="card p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">検索</label>
               <input
                 type="text"
                 placeholder="案件を検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
-            
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">プラットフォーム</label>
               <select
-                value={platformFilter}
-                onChange={(e) => setPlatformFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={selectedPlatform}
+                onChange={(e) => setSelectedPlatform(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
-                <option value="">すべてのプラットフォーム</option>
-                {availablePlatforms.map((platform) => (
-                  <option key={platform} value={platform}>
-                    {platform}
-                  </option>
-                ))}
+                <option value="all">すべて</option>
+                <option value="YouTube">YouTube</option>
+                <option value="TikTok">TikTok</option>
+                <option value="Instagram">Instagram</option>
               </select>
             </div>
+            <div className="flex items-end">
+              <div className="text-sm text-gray-600">
+                {filteredPosts.length}件の案件が見つかりました
+              </div>
+            </div>
           </div>
+        </div>
 
-          {filteredEarnPosts.map((post) => (
+        {/* 投稿フォーム */}
+        {currentUser && (
+          <div className="card p-6 mb-8">
+            <h2 className="text-xl font-semibold mb-4">新しい案件を投稿</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">タイトル</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">プラットフォーム</label>
+                  <select
+                    value={platform}
+                    onChange={(e) => setPlatform(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option>YouTube</option>
+                    <option>TikTok</option>
+                    <option>Instagram</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">仕事内容</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">予算（円）</label>
+                <input
+                  type="number"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <button type="submit" className="btn-primary">
+                投稿する
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* 案件一覧 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPosts.map((post) => (
             <EarnPostCard key={post.id} post={post} />
           ))}
         </div>
-      )}
 
-      {/* 学ぶ */}
-      {tab === "learn" && (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">教材一覧</h2>
-            <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => setShowLearnModal(true)}>
-              ＋ 投稿
-            </button>
+        {filteredPosts.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <p className="text-gray-500">条件に一致する案件が見つかりませんでした</p>
           </div>
-
-          {learnPosts.map((post) => (
-            <div key={post.id} className="border p-4 rounded mb-2 text-sm">
-              <p><strong>タイトル：</strong> {post.title}</p>
-              <p><strong>目次：</strong> {post.outline}</p>
-              <p><strong>説明：</strong> {post.description}</p>
-              <p><strong>値段：</strong> {post.price}</p>
-              <p><strong>投稿者：</strong> <Link href={`/profile/${post.authorId}`} className="text-blue-600 underline hover:text-blue-800">{post.authorName}</Link></p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 「稼ぐ」投稿モーダル */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">新しい案件を投稿</h2>
-            <div className="space-y-4">
-              <input type="text" placeholder="タイトル" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full p-2 border rounded" />
-              <div>
-                <label className="text-sm text-gray-600">タイプ</label>
-                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full p-2 border rounded bg-white">
-                  <option value="Clipping">切り抜き</option>
-                  <option value="Editing">動画編集</option>
-                  <option value="Thumbnail">サムネイル作成</option>
-                  <option value="Translation">翻訳</option>
-                  <option value="Other">その他</option>
-                </select>
-              </div>
-              <input type="number" placeholder="予算" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} className="w-full p-2 border rounded" />
-              <textarea placeholder="仕事内容" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full p-2 border rounded" rows={3}></textarea>
-              <input type="text" placeholder="プラットフォーム（例: YouTube, X）" value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} className="w-full p-2 border rounded" />
-              <input type="text" placeholder="成果報酬" value={form.reward} onChange={(e) => setForm({ ...form, reward: e.target.value })} className="w-full p-2 border rounded" />
-            </div>
-            <div className="flex justify-end gap-4 mt-6">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">キャンセル</button>
-              <button onClick={handlePost} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">投稿する</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 「学ぶ」投稿モーダル */}
-      {showLearnModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">新しい教材を投稿</h2>
-            <div className="space-y-4">
-              <input type="text" placeholder="タイトル" value={learnForm.title} onChange={(e) => setLearnForm({ ...learnForm, title: e.target.value })} className="w-full p-2 border rounded" />
-              <input type="text" placeholder="目次" value={learnForm.outline} onChange={(e) => setLearnForm({ ...learnForm, outline: e.target.value })} className="w-full p-2 border rounded" />
-              <textarea placeholder="説明" value={learnForm.description} onChange={(e) => setLearnForm({ ...learnForm, description: e.target.value })} className="w-full p-2 border rounded" rows={4}></textarea>
-              <input type="text" placeholder="値段" value={learnForm.price} onChange={(e) => setLearnForm({ ...learnForm, price: e.target.value })} className="w-full p-2 border rounded" />
-            </div>
-            <div className="flex justify-end gap-4 mt-6">
-              <button onClick={() => setShowLearnModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">キャンセル</button>
-              <button onClick={handleLearnPost} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">投稿する</button>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
