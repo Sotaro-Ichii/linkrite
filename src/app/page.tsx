@@ -1,86 +1,39 @@
 // src/app/page.tsx
-import Image from "next/image";
+import Link from 'next/link';
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left">
-          <li className="mb-2 tracking-tight">
-            Get started by editing{" "}
-            <code className="bg-black/5 dark:bg-white/10 px-1 py-0.5 rounded font-mono font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-tight">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <main className="flex flex-col items-center justify-center flex-1 px-4 sm:px-20 text-center">
+        <h1 className="text-5xl sm:text-6xl font-bold text-gray-900">
+          Linkriteへようこそ！
+        </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new"
-            target="_blank"
-            rel="noopener noreferrer"
+        <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-2xl">
+          クリエイターと編集者をつなぐプラットフォーム。
+          あなたのプロジェクトに最適なパートナーを見つけ、素晴らしいコンテンツを共に創り上げましょう。
+        </p>
+
+        <div className="mt-10 flex flex-col sm:flex-row gap-4">
+          <Link
+            href="/signup"
+            className="px-8 py-3 text-lg font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 transition"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-black/10 dark:border-white/20 transition-colors flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-900 font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://nextjs.org/docs"
-            target="_blank"
-            rel="noopener noreferrer"
+            無料で始める
+          </Link>
+          <Link
+            href="/login"
+            className="px-8 py-3 text-lg font-semibold rounded-md text-blue-700 bg-white border border-blue-600 hover:bg-gray-100 transition"
           >
-            Read our docs
-          </a>
+            ログイン
+          </Link>
         </div>
       </main>
 
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline"
-          href="https://nextjs.org/learn"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline"
-          href="https://vercel.com/templates"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline"
-          href="https://nextjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-          Go to nextjs.org →
-        </a>
+      <footer className="w-full h-20 flex items-center justify-center border-t">
+        <p className="text-gray-500">
+          &copy; {new Date().getFullYear()} Linkrite. All rights reserved.
+        </p>
       </footer>
     </div>
   );
