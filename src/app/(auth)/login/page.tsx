@@ -71,8 +71,16 @@ export default function LoginPage() {
       console.log("Current URL:", window.location.href);
       console.log("Current origin:", window.location.origin);
       
+      // リダイレクト前の状態をログに出力
+      console.log("Auth state before redirect:", {
+        currentUser: auth.currentUser?.email || 'none',
+        isInitialized: auth.app?.options?.projectId ? 'yes' : 'no'
+      });
+      
       await signInWithRedirect(auth, googleProvider);
       console.log("Sign in with redirect called successfully");
+      
+      // 注意: この後のコードは実行されません（リダイレクトが発生するため）
       
     } catch (error: any) {
       console.error("Google login error details:", {

@@ -35,6 +35,7 @@ export default function AuthProvider({
   const router = useRouter();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
+  const [isRedirectHandled, setIsRedirectHandled] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -51,8 +52,10 @@ export default function AuthProvider({
     });
 
     // ログインリダイレクト直後の処理
-    getRedirectResult(auth)
-      .then(async (result) => {
+    const handleRedirectResult = async () => {
+      try {
+        console.log("Checking for redirect result...");
+        const result = await getRedirectResult(auth);
         console.log("getRedirectResult called, result:", result ? 'exists' : 'null');
         
         if (result) {
@@ -64,13 +67,14 @@ export default function AuthProvider({
           });
           
           await saveUserToFirestore(result.user);
-          console.log("Redirecting to /home");
+          console.log("Redirecting to /home after successful authentication");
+          setIsRedirectHandled(true);
           router.push("/home");
         } else {
           console.log("No redirect result found");
+          setIsRedirectHandled(true);
         }
-      })
-      .catch((error) => {
+      } catch (error: any) {
         console.error("Error getting redirect result:", error);
         // エラーの詳細をログに出力
         if (error.code) {
@@ -85,7 +89,15 @@ export default function AuthProvider({
         if (error.credential) {
           console.error("Error credential:", error.credential);
         }
-      });
+        setIsRedirectHandled(true);
+      }
+    };
+
+    handleRedirectResult();
+  }, [isClient, router]);
+
+  useEffect(() => {
+    if (!isClient || !isRedirectHandled) return;
 
     // 認証状態の変更を監視するリスナー
     const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
@@ -103,6 +115,12 @@ export default function AuthProvider({
         }
       } else {
         console.log("User signed out");
+        // ログアウト時は認証ページにリダイレクト
+        const authPages = ["/", "/login", "/signup"];
+        if (!authPages.includes(pathname)) {
+          console.log("User signed out, redirecting to login page");
+          router.push("/login");
+        }
       }
     });
 
@@ -111,7 +129,7 @@ export default function AuthProvider({
       console.log("AuthProvider unmounting, cleaning up listeners");
       unsubscribe();
     };
-  }, [pathname, router, isClient]);
+  }, [pathname, router, isClient, isRedirectHandled]);
 
   // クライアントサイドでのみレンダリング
   if (!isClient) {
