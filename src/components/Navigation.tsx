@@ -5,20 +5,23 @@ import { usePathname } from "next/navigation";
 
 export default function Navigation() {
   const pathname = usePathname();
-
-  // トップページ（/）ではホームボタンを表示しない
-  if (pathname === "/") {
-    return null;
-  }
+  const isHomePage = pathname === "/";
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
 
   return (
-    <nav className="fixed top-0 left-0 z-50 w-full bg-white shadow-sm border-b">
+    <nav className={`fixed top-0 left-0 z-50 w-full shadow-sm border-b ${
+      isHomePage ? 'bg-transparent' : 'bg-white'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link 
               href="/home" 
-              className="flex items-center space-x-2 text-gray-900 hover:text-blue-600 transition-colors duration-200"
+              className={`flex items-center space-x-2 transition-colors duration-200 ${
+                isHomePage 
+                  ? 'text-white hover:text-blue-200' 
+                  : 'text-gray-900 hover:text-blue-600'
+              }`}
             >
               <svg 
                 className="w-6 h-6" 
@@ -38,12 +41,14 @@ export default function Navigation() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Link 
-              href="/" 
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
-            >
-              トップページ
-            </Link>
+            {!isHomePage && (
+              <Link 
+                href="/" 
+                className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              >
+                トップページ
+              </Link>
+            )}
           </div>
         </div>
       </div>
