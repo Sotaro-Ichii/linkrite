@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 export default function EditProfilePage() {
@@ -36,15 +36,32 @@ export default function EditProfilePage() {
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
           setFormData({
-            displayName: userData.displayName || "",
+            displayName: userData.displayName || user.displayName || "",
             bio: userData.bio || "",
             website: userData.website || "",
             twitter: userData.twitter || "",
             github: userData.github || "",
           });
+        } else {
+          // ユーザードキュメントが存在しない場合は、デフォルト値を設定
+          setFormData({
+            displayName: user.displayName || "",
+            bio: "",
+            website: "",
+            twitter: "",
+            github: "",
+          });
         }
       } catch (error) {
         console.error("プロフィール情報の取得に失敗しました:", error);
+        // エラーが発生した場合もデフォルト値を設定
+        setFormData({
+          displayName: user.displayName || "",
+          bio: "",
+          website: "",
+          twitter: "",
+          github: "",
+        });
       }
       
       setLoading(false);
@@ -62,14 +79,33 @@ export default function EditProfilePage() {
     
     try {
       const userDocRef = doc(db, "users", user.uid);
-      await updateDoc(userDocRef, {
-        displayName: formData.displayName,
-        bio: formData.bio,
-        website: formData.website,
-        twitter: formData.twitter,
-        github: formData.github,
-        updatedAt: new Date(),
-      });
+      
+      // ユーザードキュメントが存在するかチェック
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        // 既存のドキュメントを更新
+        await updateDoc(userDocRef, {
+          displayName: formData.displayName,
+          bio: formData.bio,
+          website: formData.website,
+          twitter: formData.twitter,
+          github: formData.github,
+          updatedAt: new Date(),
+        });
+      } else {
+        // 新規ドキュメントを作成
+        await setDoc(userDocRef, {
+          displayName: formData.displayName,
+          bio: formData.bio,
+          website: formData.website,
+          twitter: formData.twitter,
+          github: formData.github,
+          email: user.email,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
       
       alert("プロフィールを更新しました！");
       router.push(`/profile/${user.uid}`);
