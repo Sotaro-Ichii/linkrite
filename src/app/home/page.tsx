@@ -111,7 +111,7 @@ export default function HomePage() {
         <div className="card p-6 mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold gradient-text mb-2">Linkrite</h1>
+              <h1 className="text-3xl font-bold gradient-text mb-2">LinqLet</h1>
               <p className="text-gray-600">クリエイターと編集者をつなぐプラットフォーム</p>
             </div>
             {currentUser ? (

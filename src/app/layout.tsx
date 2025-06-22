@@ -5,8 +5,8 @@ import AuthProvider from "@/components/AuthProvider";
 import Navigation from "@/components/Navigation";
 
 export const metadata: Metadata = {
-  title: "Linkrite",
-  description: "Connect creators and editors in Japan",
+  title: "LinqLet",
+  description: "Connect creators and editors in Japan. Find your next project on LinqLet.",
 };
 
 export default function RootLayout({
