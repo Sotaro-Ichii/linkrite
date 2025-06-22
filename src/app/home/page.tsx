@@ -11,9 +11,10 @@ import {
   getDocs,
   onSnapshot,
 } from "firebase/firestore";
-import { onAuthStateChanged, signInWithRedirect, signOut, GoogleAuthProvider } from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import Link from "next/link";
 import EarnPostCard from "@/components/EarnPostCard";
+import { createGoogleProvider } from "@/lib/firebase";
 
 export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -47,9 +48,13 @@ export default function HomePage() {
   }, [tab]);
 
   const handleGoogleLogin = async () => {
-    const googleProvider = new GoogleAuthProvider();
+    const googleProvider = createGoogleProvider();
+    if (!googleProvider) {
+      console.error("Failed to create google provider.");
+      return;
+    }
     try {
-      await signInWithRedirect(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       console.error("Google login error:", error);
     }
