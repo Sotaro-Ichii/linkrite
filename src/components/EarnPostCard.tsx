@@ -14,7 +14,9 @@ const platformIcons: { [key: string]: React.ReactNode } = {
 };
 
 export default function EarnPostCard({ post }: { post: any }) {
-  const percentage = post.totalBudget > 0 ? (post.paidOut / post.totalBudget) * 100 : 0;
+  const paidOut = post.paidOut ?? 0;
+  const totalBudget = post.totalBudget ?? Number(post.budget) ?? 0;
+  const percentage = totalBudget > 0 ? (paidOut / totalBudget) * 100 : 0;
   const createdAtDate = post.createdAt?.toDate();
 
   return (
@@ -45,7 +47,7 @@ export default function EarnPostCard({ post }: { post: any }) {
       <div className="mb-4">
         <div className="flex justify-between items-center text-sm mb-1">
           <p className="text-gray-600 dark:text-gray-300">
-            ${post.paidOut.toLocaleString()} of ${post.totalBudget.toLocaleString()} paid out
+            ${paidOut.toLocaleString()} of ${totalBudget.toLocaleString()} paid out
           </p>
           <p className="font-semibold text-gray-700 dark:text-gray-200">{percentage.toFixed(0)}%</p>
         </div>
