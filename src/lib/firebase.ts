@@ -1,6 +1,6 @@
 // src/lib/firebase.ts
 
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -23,12 +23,26 @@ console.log("Firebase Config Used:", {
   appId: firebaseConfig.appId ? "Loaded" : "NOT LOADED",
 });
 
-// Firebaseアプリの初期化
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+let app;
+if (getApps().length === 0) {
+  if (
+    firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId &&
+    firebaseConfig.storageBucket &&
+    firebaseConfig.messagingSenderId &&
+    firebaseConfig.appId
+  ) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    console.error("Firebase config is missing or incomplete. Firebase has not been initialized.");
+  }
+} else {
+  app = getApp();
+}
 
 // Firebaseの各サービス
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-
-// 👇 Googleログイン用プロバイダーを追加
-export const googleProvider = new GoogleAuthProvider();
+// appが初期化されている場合のみエクスポート
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
+export const googleProvider = app ? new GoogleAuthProvider() : null;
