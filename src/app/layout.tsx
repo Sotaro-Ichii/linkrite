@@ -4,9 +4,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { useEffect } from "react";
-import { auth } from "@/lib/firebase";
-import { getRedirectResult } from "firebase/auth";
+import AuthProvider from "@/components/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,20 +26,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
-    // リダイレクト後の認証結果を確認
-    getRedirectResult(auth).then((result) => {
-      if (result) {
-        console.log("認証成功:", result.user.displayName);
-      }
-    }).catch((error) => {
-      console.error("認証エラー:", error);
-    });
-  }, []);
-
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html lang="ja" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={geistSans.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
