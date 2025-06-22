@@ -21,7 +21,7 @@ export default function Navigation() {
               href="/home" 
               className={`flex items-center space-x-3 transition-all duration-200 group ${
                 isHomePage 
-                  ? 'text-white hover:text-purple-200' 
+                  ? 'text-white hover:text-purple-200 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]' 
                   : 'text-gray-900 hover:text-purple-600'
               }`}
             >
