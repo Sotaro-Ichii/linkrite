@@ -36,7 +36,9 @@ export default function EarnPostCard({ post }: { post: any }) {
     }
   };
 
-  const progressPercentage = Math.min((post.currentAmount || 0) / (post.budget || 1) * 100, 100);
+  const budget = Number(post.budget) || 0;
+  const currentAmount = Number(post.currentAmount) || 0;
+  const progressPercentage = budget > 0 ? Math.min((currentAmount / budget) * 100, 100) : 0;
 
   return (
     <div className="card card-hover overflow-hidden">
@@ -72,7 +74,7 @@ export default function EarnPostCard({ post }: { post: any }) {
         <div className="space-y-3 mb-4">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700">予算</span>
-            <span className="font-bold text-lg gradient-text">¥{post.budget?.toLocaleString() || "0"}</span>
+            <span className="font-bold text-lg gradient-text">¥{budget.toLocaleString()}</span>
           </div>
           
           <div className="space-y-2">
@@ -90,8 +92,8 @@ export default function EarnPostCard({ post }: { post: any }) {
               ></div>
             </div>
             <div className="flex justify-between text-xs text-gray-500">
-              <span>現在: ¥{(post.currentAmount || 0).toLocaleString()}</span>
-              <span>目標: ¥{(post.budget || 0).toLocaleString()}</span>
+              <span>現在: ¥{currentAmount.toLocaleString()}</span>
+              <span>目標: ¥{budget.toLocaleString()}</span>
             </div>
           </div>
         </div>
