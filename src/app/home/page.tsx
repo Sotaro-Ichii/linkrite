@@ -11,7 +11,11 @@ import {
   getDocs,
   onSnapshot,
 } from "firebase/firestore";
-import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 import Link from "next/link";
 import EarnPostCard from "@/components/EarnPostCard";
 import { createGoogleProvider } from "@/lib/firebase";

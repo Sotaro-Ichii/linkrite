@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { signInWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { auth, createGoogleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -87,11 +91,12 @@ export default function LoginPage() {
         projectId: auth.app?.options?.projectId
       });
       
-      console.log("About to call signInWithRedirect...");
-      await signInWithRedirect(auth, googleProvider);
-      console.log("Sign in with redirect called successfully");
+      console.log("About to call signInWithPopup...");
+      await signInWithPopup(auth, googleProvider);
+      console.log("Sign in with popup called successfully. AuthProvider should handle the rest.");
       
-      // 注意: この後のコードは実行されません（リダイレクトが発生するため）
+      // 注意: ポップアップが成功すると、AuthProviderのonAuthStateChangedが発火し、
+      // /homeへのリダイレクトが行われるため、ここでのリダイレクト処理は不要です。
       
     } catch (error: any) {
       console.error("=== Google login error details ===", {
