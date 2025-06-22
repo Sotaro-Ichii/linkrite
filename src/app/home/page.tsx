@@ -13,7 +13,7 @@ import {
   doc,
   where,
 } from "firebase/firestore";
-import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { onAuthStateChanged, signInWithRedirect, signOut, GoogleAuthProvider } from "firebase/auth";
 import Link from "next/link";
 import EarnPostCard from "@/components/EarnPostCard";
 
@@ -91,11 +91,12 @@ export default function HomePage() {
     });
   }, [currentUser]);
 
-  const handleLogin = async () => {
+  const handleGoogleLogin = async () => {
+    const googleProvider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (err: any) {
-      alert("ログインに失敗しました: " + err.message);
+      await signInWithRedirect(auth, googleProvider);
+    } catch (error: any) {
+      console.error("Google login error:", error);
     }
   };
 
@@ -193,7 +194,7 @@ export default function HomePage() {
             </button>
           </div>
         ) : (
-          <button onClick={handleLogin} className="bg-blue-600 text-white px-4 py-1 rounded">
+          <button onClick={handleGoogleLogin} className="bg-blue-600 text-white px-4 py-1 rounded">
             Googleでログイン
           </button>
         )}

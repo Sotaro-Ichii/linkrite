@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import { FaYoutube, FaTwitter, FaInstagram, FaTiktok } from 'react-icons/fa';
+import { useState } from "react";
 
 const platformIcons: { [key: string]: React.ReactNode } = {
   YouTube: <FaYoutube className="text-red-500" />,
@@ -14,6 +15,38 @@ const platformIcons: { [key: string]: React.ReactNode } = {
 };
 
 export default function EarnPostCard({ post }: { post: any }) {
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case "YouTube":
+        return "🔴";
+      case "TikTok":
+        return "⚫";
+      case "Instagram":
+        return "📷";
+      default:
+        return "📱";
+    }
+  };
+
+  const getPlatformColor = (platform: string) => {
+    switch (platform) {
+      case "YouTube":
+        return "bg-red-500";
+      case "TikTok":
+        return "bg-black";
+      case "Instagram":
+        return "bg-gradient-to-r from-purple-500 to-pink-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
   const paidOut = post.paidOut ?? 0;
   const totalBudget = post.totalBudget ?? Number(post.budget) ?? 0;
   const percentage = totalBudget > 0 ? (paidOut / totalBudget) * 100 : 0;
@@ -24,11 +57,12 @@ export default function EarnPostCard({ post }: { post: any }) {
       <div className="flex items-center mb-3">
         <Link href={`/profile/${post.authorId}`}>
           <Image
-            src={post.authorPhotoURL || "/default-avatar.png"}
+            src={imageError ? "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e5e7eb'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='%236b7280' font-size='16'%3E👤%3C/text%3E%3C/svg%3E" : (post.authorPhotoURL || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e5e7eb'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='%236b7280' font-size='16'%3E👤%3C/text%3E%3C/svg%3E")}
             alt={post.authorName}
             width={40}
             height={40}
             className="rounded-full mr-3"
+            onError={handleImageError}
           />
         </Link>
         <div className="flex-grow">
