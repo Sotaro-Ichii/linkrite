@@ -308,6 +308,45 @@ export default function HomePage() {
           ))}
         </div>
       )}
+
+      {/* 「稼ぐ」投稿モーダル */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">新しい案件を投稿</h2>
+            <div className="space-y-4">
+              <input type="text" placeholder="タイトル" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full p-2 border rounded" />
+              <input type="text" placeholder="予算" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} className="w-full p-2 border rounded" />
+              <textarea placeholder="仕事内容" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full p-2 border rounded" rows={4}></textarea>
+              <input type="text" placeholder="プラットフォーム（例: YouTube, X）" value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} className="w-full p-2 border rounded" />
+              <input type="text" placeholder="成果報酬" value={form.reward} onChange={(e) => setForm({ ...form, reward: e.target.value })} className="w-full p-2 border rounded" />
+            </div>
+            <div className="flex justify-end gap-4 mt-6">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">キャンセル</button>
+              <button onClick={handlePost} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">投稿する</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 「学ぶ」投稿モーダル */}
+      {showLearnModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">新しい教材を投稿</h2>
+            <div className="space-y-4">
+              <input type="text" placeholder="タイトル" value={learnForm.title} onChange={(e) => setLearnForm({ ...learnForm, title: e.target.value })} className="w-full p-2 border rounded" />
+              <input type="text" placeholder="目次" value={learnForm.outline} onChange={(e) => setLearnForm({ ...learnForm, outline: e.target.value })} className="w-full p-2 border rounded" />
+              <textarea placeholder="説明" value={learnForm.description} onChange={(e) => setLearnForm({ ...learnForm, description: e.target.value })} className="w-full p-2 border rounded" rows={4}></textarea>
+              <input type="text" placeholder="値段" value={learnForm.price} onChange={(e) => setLearnForm({ ...learnForm, price: e.target.value })} className="w-full p-2 border rounded" />
+            </div>
+            <div className="flex justify-end gap-4 mt-6">
+              <button onClick={() => setShowLearnModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">キャンセル</button>
+              <button onClick={handleLearnPost} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">投稿する</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
