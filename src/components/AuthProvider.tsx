@@ -106,7 +106,7 @@ export default function AuthProvider({
         });
         
         await saveUserToFirestore(user);
-        const authPages = ["/", "/login", "/signup"];
+        const authPages = ["/login", "/signup"];
         if (authPages.includes(pathname)) {
             console.log("=== User is logged in on an auth page, redirecting to /home ===");
             router.push("/home");
