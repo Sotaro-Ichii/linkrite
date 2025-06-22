@@ -21,6 +21,8 @@ export default function HomePage() {
   const [showModal, setShowModal] = useState(false);
   const [showLearnModal, setShowLearnModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [platformFilter, setPlatformFilter] = useState("");
 
   const [form, setForm] = useState({
     title: "",
@@ -40,6 +42,20 @@ export default function HomePage() {
   const [earnPosts, setEarnPosts] = useState<any[]>([]);
   const [learnPosts, setLearnPosts] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
+
+  // フィルタリングされた投稿
+  const filteredEarnPosts = earnPosts.filter((post) => {
+    const matchesSearch = searchTerm === "" || 
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesPlatform = platformFilter === "" || post.platform === platformFilter;
+    
+    return matchesSearch && matchesPlatform;
+  });
+
+  // 利用可能なプラットフォーム一覧
+  const availablePlatforms = Array.from(new Set(earnPosts.map(post => post.platform))).filter(Boolean);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -157,9 +173,17 @@ export default function HomePage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Linkrite ホーム</h1>
         {currentUser ? (
-          <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-1 rounded">
-            ログアウト
-          </button>
+          <div className="flex items-center gap-4">
+            <Link 
+              href={`/profile/${currentUser.uid}`}
+              className="text-blue-600 hover:underline"
+            >
+              プロフィール
+            </Link>
+            <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-1 rounded">
+              ログアウト
+            </button>
+          </div>
         ) : (
           <button onClick={handleLogin} className="bg-blue-600 text-white px-4 py-1 rounded">
             Googleでログイン
@@ -197,7 +221,35 @@ export default function HomePage() {
             </button>
           </div>
 
-          {earnPosts.map((post) => {
+          {/* 検索・フィルター */}
+          <div className="mb-6 space-y-4">
+            <div>
+              <input
+                type="text"
+                placeholder="案件を検索..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            
+            <div>
+              <select
+                value={platformFilter}
+                onChange={(e) => setPlatformFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">すべてのプラットフォーム</option>
+                {availablePlatforms.map((platform) => (
+                  <option key={platform} value={platform}>
+                    {platform}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {filteredEarnPosts.map((post) => {
             const application = applications.find((app) => app.postId === post.id);
 
             return (

@@ -149,7 +149,15 @@ export default function EarnDetailPage() {
                 <ul className="space-y-2">
                   {applications.map((app) => (
                     <li key={app.id} className="flex justify-between items-center">
-                      <span>{app.applicantName}（{app.status}）</span>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/profile/${app.applicantUid}`}
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {app.applicantName}
+                        </Link>
+                        <span className="text-sm text-gray-600">（{app.status}）</span>
+                      </div>
                       <div className="space-x-2">
                         <button
                           onClick={() => handleUpdateStatus(app.id, "approved")}
