@@ -114,11 +114,13 @@ export default function AuthProvider({
       } else {
         console.log("=== User signed out ===");
         // ログアウト時は認証ページにリダイレクト
-        const authPages = ["/", "/login", "/signup"];
+        /*
+        const authPages = ["/login", "/signup"];
         if (!authPages.includes(pathname)) {
           console.log("=== User signed out, redirecting to login page ===");
           router.push("/login");
         }
+        */
       }
     });
 
