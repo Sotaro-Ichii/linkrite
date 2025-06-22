@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import Link from "next/link";
+import EarnPostCard from "@/components/EarnPostCard";
 
 export default function HomePage() {
   const [tab, setTab] = useState<"feed" | "earn" | "learn">("feed");
@@ -30,6 +31,7 @@ export default function HomePage() {
     description: "",
     platform: "",
     reward: "",
+    type: "Clipping",
   });
 
   const [learnForm, setLearnForm] = useState({
@@ -110,19 +112,25 @@ export default function HomePage() {
 
     try {
       await setDoc(doc(db, "users", currentUser.uid), {
+        uid: currentUser.uid,
         displayName: currentUser.displayName || "匿名",
-      });
+        photoURL: currentUser.photoURL,
+        email: currentUser.email,
+      }, { merge: true });
 
       await addDoc(collection(db, "earnPosts"), {
         ...form,
+        totalBudget: Number(form.budget) || 0,
+        paidOut: 0,
         createdAt: serverTimestamp(),
         authorId: currentUser.uid,
         authorName: currentUser.displayName || "匿名",
+        authorPhotoURL: currentUser.photoURL || "",
       });
 
       alert("案件が保存されました！");
       setShowModal(false);
-      setForm({ title: "", budget: "", description: "", platform: "", reward: "" });
+      setForm({ title: "", budget: "", description: "", platform: "", reward: "", type: "Clipping" });
     } catch (err: any) {
       alert("エラー：" + err.message);
     }
@@ -249,41 +257,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          {filteredEarnPosts.map((post) => {
-            const application = applications.find((app) => app.postId === post.id);
-
-            return (
-              <div key={post.id} className="block border p-4 rounded mb-4 hover:bg-gray-100 dark:hover:bg-gray-800">
-                <Link href={`/earn/${post.id}`} className="block">
-                  <p><strong>タイトル：</strong> {post.title}</p>
-                  <p><strong>報酬：</strong> {post.reward}</p>
-                  <p><strong>プラットフォーム：</strong> {post.platform}</p>
-                </Link>
-                <p>
-                  <strong>投稿者：</strong>{" "}
-                  <Link href={`/profile/${post.authorId}`} className="text-blue-600 underline hover:text-blue-800">
-                    {post.authorName}
-                  </Link>
-                </p>
-
-                {currentUser?.uid !== post.authorId && (
-                  application ? (
-                    <p className="mt-2 text-sm text-yellow-400">
-                      応募済み：{application.status === "approved"
-                        ? "承認済み"
-                        : application.status === "rejected"
-                        ? "却下"
-                        : "審査中"}
-                    </p>
-                  ) : (
-                    <button className="mt-2 px-4 py-1 bg-green-600 text-white rounded" onClick={() => handleApply(post.id)}>
-                      応募する
-                    </button>
-                  )
-                )}
-              </div>
-            );
-          })}
+          {filteredEarnPosts.map((post) => (
+            <EarnPostCard key={post.id} post={post} />
+          ))}
         </div>
       )}
 
@@ -311,13 +287,23 @@ export default function HomePage() {
 
       {/* 「稼ぐ」投稿モーダル */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">新しい案件を投稿</h2>
             <div className="space-y-4">
               <input type="text" placeholder="タイトル" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full p-2 border rounded" />
-              <input type="text" placeholder="予算" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} className="w-full p-2 border rounded" />
-              <textarea placeholder="仕事内容" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full p-2 border rounded" rows={4}></textarea>
+              <div>
+                <label className="text-sm text-gray-600">タイプ</label>
+                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full p-2 border rounded bg-white">
+                  <option value="Clipping">切り抜き</option>
+                  <option value="Editing">動画編集</option>
+                  <option value="Thumbnail">サムネイル作成</option>
+                  <option value="Translation">翻訳</option>
+                  <option value="Other">その他</option>
+                </select>
+              </div>
+              <input type="number" placeholder="予算" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} className="w-full p-2 border rounded" />
+              <textarea placeholder="仕事内容" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full p-2 border rounded" rows={3}></textarea>
               <input type="text" placeholder="プラットフォーム（例: YouTube, X）" value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} className="w-full p-2 border rounded" />
               <input type="text" placeholder="成果報酬" value={form.reward} onChange={(e) => setForm({ ...form, reward: e.target.value })} className="w-full p-2 border rounded" />
             </div>
