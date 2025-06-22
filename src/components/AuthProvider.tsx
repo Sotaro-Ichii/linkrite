@@ -1,9 +1,27 @@
 "use client";
 
 import { useEffect } from "react";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { getRedirectResult, onAuthStateChanged, User } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter, usePathname } from "next/navigation";
+
+const saveUserToFirestore = async (user: User) => {
+  const userDocRef = doc(db, "users", user.uid);
+  const userDocSnap = await getDoc(userDocRef);
+
+  if (!userDocSnap.exists()) {
+    // Firestoreにユーザーが存在しない場合のみ新規作成
+    await setDoc(userDocRef, {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      createdAt: new Date(),
+    }, { merge: true });
+    console.log("New user saved to Firestore:", user.displayName);
+  }
+};
 
 export default function AuthProvider({
   children,
@@ -16,9 +34,9 @@ export default function AuthProvider({
   useEffect(() => {
     // ログインリダイレクト直後の処理
     getRedirectResult(auth)
-      .then((result) => {
+      .then(async (result) => {
         if (result) {
-          // 認証情報があればホームページへ
+          await saveUserToFirestore(result.user);
           console.log("Redirect result obtained, redirecting to /home");
           router.push("/home");
         }
@@ -28,12 +46,11 @@ export default function AuthProvider({
       });
 
     // 認証状態の変更を監視するリスナー
-    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
       if (user) {
-        // ユーザーがログインしている場合
+        await saveUserToFirestore(user);
         const authPages = ["/", "/login", "/signup"];
         if (authPages.includes(pathname)) {
-            // 現在地がLPや認証ページなら、ホームページへ
             console.log("User is logged in on an auth page, redirecting to /home");
             router.push("/home");
         }
