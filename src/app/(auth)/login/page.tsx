@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signInWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider } from "firebase/auth";
 import { auth, createGoogleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [debugInfo, setDebugInfo] = useState("");
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+
+  // クライアントサイドでのみ実行
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // コンポーネントマウント時にFirebaseの状態を確認
+  useEffect(() => {
+    if (!isClient) return;
+
+    const checkFirebaseStatus = () => {
+      const info = [];
+      info.push(`Auth object exists: ${!!auth}`);
+      info.push(`Auth currentUser: ${auth?.currentUser?.email || 'none'}`);
+      info.push(`Window location: ${window.location.origin}`);
+      setDebugInfo(info.join(' | '));
+    };
+
+    checkFirebaseStatus();
+  }, [isClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +43,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/home");
     } catch (error: any) {
+      console.error("Email login error:", error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -30,20 +53,72 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError("");
+    
     try {
+      console.log("Starting Google login process...");
+      
       const googleProvider = createGoogleProvider();
       if (!googleProvider) {
-        setError("Firebase設定が正しく初期化されていません。環境変数を確認してください。");
+        const errorMsg = "Firebase設定が正しく初期化されていません。環境変数を確認してください。";
+        console.error(errorMsg);
+        setError(errorMsg);
         return;
       }
+
+      console.log("Google provider created, attempting sign in...");
+      
+      // 現在のURLをログに出力
+      console.log("Current URL:", window.location.href);
+      console.log("Current origin:", window.location.origin);
+      
       await signInWithRedirect(auth, googleProvider);
+      console.log("Sign in with redirect called successfully");
+      
     } catch (error: any) {
-      console.error("Google login error:", error);
-      setError(error.message || "Googleログイン中にエラーが発生しました。");
+      console.error("Google login error details:", {
+        code: error.code,
+        message: error.message,
+        email: error.email,
+        credential: error.credential
+      });
+      
+      let errorMessage = "Googleログイン中にエラーが発生しました。";
+      
+      // エラーコードに基づいてより具体的なメッセージを表示
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          errorMessage = "ログインポップアップが閉じられました。";
+          break;
+        case 'auth/popup-blocked':
+          errorMessage = "ポップアップがブロックされました。ポップアップを許可してください。";
+          break;
+        case 'auth/cancelled-popup-request':
+          errorMessage = "ログインがキャンセルされました。";
+          break;
+        case 'auth/unauthorized-domain':
+          errorMessage = "このドメインは認証に使用できません。";
+          break;
+        default:
+          errorMessage = error.message || "Googleログイン中にエラーが発生しました。";
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // クライアントサイドでのみレンダリング
+  if (!isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -53,6 +128,14 @@ export default function LoginPage() {
             アカウントにログイン
           </h2>
         </div>
+        
+        {/* デバッグ情報（開発環境のみ） */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+            <p className="text-xs text-yellow-800">{debugInfo}</p>
+          </div>
+        )}
+        
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -80,7 +163,9 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
+            <div className="text-red-500 text-sm text-center bg-red-50 border border-red-200 rounded-md p-3">
+              {error}
+            </div>
           )}
 
           <div>

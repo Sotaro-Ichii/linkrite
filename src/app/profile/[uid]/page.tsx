@@ -11,13 +11,13 @@ import {
 import Link from "next/link";
 
 interface Props {
-  params: {
+  params: Promise<{
     uid: string;
-  };
+  }>;
 }
 
 export default async function ProfilePage({ params }: Props) {
-  const { uid } = params;
+  const { uid } = await params;
 
   // ユーザー情報を取得
   const userDocRef = doc(db, "users", uid);
