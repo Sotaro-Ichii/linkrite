@@ -23,26 +23,20 @@ console.log("Firebase Config Used:", {
   appId: firebaseConfig.appId ? "Loaded" : "NOT LOADED",
 });
 
+// 環境変数が一つでも欠けているかチェック
+const isConfigMissing = Object.values(firebaseConfig).some(value => !value);
+
 let app;
-if (getApps().length === 0) {
-  if (
-    firebaseConfig.apiKey &&
-    firebaseConfig.authDomain &&
-    firebaseConfig.projectId &&
-    firebaseConfig.storageBucket &&
-    firebaseConfig.messagingSenderId &&
-    firebaseConfig.appId
-  ) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    console.error("Firebase config is missing or incomplete. Firebase has not been initialized.");
-  }
+
+if (isConfigMissing) {
+  console.error("🔴 FATAL ERROR: Firebase environment variables are missing or incomplete. Please check your Vercel project settings.");
+  // 意図的にエラーを発生させるか、何もしないことで、後続の処理でエラーを発生させる
 } else {
-  app = getApp();
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 }
 
-// Firebaseの各サービス
-// appが初期化されている場合のみエクスポート
-export const auth = app ? getAuth(app) : null;
-export const db = app ? getFirestore(app) : null;
-export const googleProvider = app ? new GoogleAuthProvider() : null;
+// @ts-ignore
+export const auth = getAuth(app);
+// @ts-ignore
+export const db = getFirestore(app);
+export const googleProvider = new GoogleAuthProvider();
