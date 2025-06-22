@@ -29,6 +29,7 @@ export default function LoginPage() {
       info.push(`Auth object exists: ${!!auth}`);
       info.push(`Auth currentUser: ${auth?.currentUser?.email || 'none'}`);
       info.push(`Window location: ${window.location.origin}`);
+      info.push(`Current URL: ${window.location.href}`);
       setDebugInfo(info.join(' | '));
     };
 
@@ -55,7 +56,12 @@ export default function LoginPage() {
     setError("");
     
     try {
-      console.log("Starting Google login process...");
+      console.log("=== Starting Google login process ===");
+      
+      // Firebase設定の確認
+      console.log("Firebase auth object:", auth);
+      console.log("Firebase app:", auth?.app);
+      console.log("Firebase config:", auth?.app?.options);
       
       const googleProvider = createGoogleProvider();
       if (!googleProvider) {
@@ -65,7 +71,9 @@ export default function LoginPage() {
         return;
       }
 
-      console.log("Google provider created, attempting sign in...");
+      console.log("Google provider created successfully:", googleProvider);
+      console.log("Provider scopes:", (googleProvider as any).scopes);
+      console.log("Provider custom parameters:", (googleProvider as any).customParameters);
       
       // 現在のURLをログに出力
       console.log("Current URL:", window.location.href);
@@ -74,20 +82,24 @@ export default function LoginPage() {
       // リダイレクト前の状態をログに出力
       console.log("Auth state before redirect:", {
         currentUser: auth.currentUser?.email || 'none',
-        isInitialized: auth.app?.options?.projectId ? 'yes' : 'no'
+        isInitialized: auth.app?.options?.projectId ? 'yes' : 'no',
+        authDomain: auth.app?.options?.authDomain,
+        projectId: auth.app?.options?.projectId
       });
       
+      console.log("About to call signInWithRedirect...");
       await signInWithRedirect(auth, googleProvider);
       console.log("Sign in with redirect called successfully");
       
       // 注意: この後のコードは実行されません（リダイレクトが発生するため）
       
     } catch (error: any) {
-      console.error("Google login error details:", {
+      console.error("=== Google login error details ===", {
         code: error.code,
         message: error.message,
         email: error.email,
-        credential: error.credential
+        credential: error.credential,
+        fullError: error
       });
       
       let errorMessage = "Googleログイン中にエラーが発生しました。";
@@ -105,6 +117,9 @@ export default function LoginPage() {
           break;
         case 'auth/unauthorized-domain':
           errorMessage = "このドメインは認証に使用できません。";
+          break;
+        case 'auth/operation-not-allowed':
+          errorMessage = "Google認証が有効になっていません。Firebase Consoleで設定を確認してください。";
           break;
         default:
           errorMessage = error.message || "Googleログイン中にエラーが発生しました。";
