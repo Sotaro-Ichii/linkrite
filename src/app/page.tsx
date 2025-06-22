@@ -22,7 +22,7 @@ export default function LandingPage() {
         {/* メインコンテンツ */}
         <main className="flex flex-col items-center justify-center flex-1 max-w-4xl">
           <h1 className="text-5xl sm:text-7xl font-bold text-white mb-6 animate-fadeInUp">
-            <span className="gradient-text">Linkrite</span>へようこそ！
+            <span className="gradient-text">LinqLet</span>へようこそ！
           </h1>
 
           <p className="text-xl sm:text-2xl text-white/90 max-w-3xl mb-8 leading-relaxed animate-fadeInUp" style={{animationDelay: '0.2s'}}>
@@ -78,7 +78,7 @@ export default function LandingPage() {
         <footer className="w-full py-8 border-t border-white/20">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-white/60">
-              &copy; {new Date().getFullYear()} Linkrite. All rights reserved.
+              &copy; {new Date().getFullYear()} LinqLet. All rights reserved.
             </p>
           </div>
         </footer>
