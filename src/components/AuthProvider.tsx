@@ -35,7 +35,6 @@ export default function AuthProvider({
   const router = useRouter();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
-  const [isRedirectHandled, setIsRedirectHandled] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -51,58 +50,46 @@ export default function AuthProvider({
       isInitialized: auth?.app?.options?.projectId ? 'yes' : 'no'
     });
 
-    // ログインリダイレクト直後の処理
-    const handleRedirectResult = async () => {
-      try {
-        console.log("Checking for redirect result...");
-        const result = await getRedirectResult(auth);
-        console.log("getRedirectResult called, result:", result ? 'exists' : 'null');
-        
-        if (result) {
-          console.log("Redirect result obtained for user:", result.user.displayName);
-          console.log("User details:", {
-            uid: result.user.uid,
-            email: result.user.email,
-            providerId: result.user.providerId
-          });
-          
-          await saveUserToFirestore(result.user);
-          console.log("Redirecting to /home after successful authentication");
-          setIsRedirectHandled(true);
-          router.push("/home");
-        } else {
-          console.log("No redirect result found");
-          setIsRedirectHandled(true);
-        }
-      } catch (error: any) {
-        console.error("Error getting redirect result:", error);
-        // エラーの詳細をログに出力
-        if (error.code) {
-          console.error("Error code:", error.code);
-        }
-        if (error.message) {
-          console.error("Error message:", error.message);
-        }
-        if (error.email) {
-          console.error("Error email:", error.email);
-        }
-        if (error.credential) {
-          console.error("Error credential:", error.credential);
-        }
-        setIsRedirectHandled(true);
-      }
-    };
-
-    handleRedirectResult();
-  }, [isClient, router]);
-
-  useEffect(() => {
-    if (!isClient || !isRedirectHandled) return;
+    let isInitialized = false;
 
     // 認証状態の変更を監視するリスナー
     const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
       console.log("Auth state changed:", user ? `User: ${user.email}` : 'No user');
       
+      if (!isInitialized) {
+        // 初回のみリダイレクト結果を確認
+        isInitialized = true;
+        
+        try {
+          console.log("Checking for redirect result...");
+          const result = await getRedirectResult(auth);
+          console.log("getRedirectResult called, result:", result ? 'exists' : 'null');
+          
+          if (result) {
+            console.log("Redirect result obtained for user:", result.user.displayName);
+            console.log("User details:", {
+              uid: result.user.uid,
+              email: result.user.email,
+              providerId: result.user.providerId
+            });
+            
+            await saveUserToFirestore(result.user);
+            console.log("Redirecting to /home after successful authentication");
+            router.push("/home");
+            return; // リダイレクト結果がある場合は、ここで処理を終了
+          }
+        } catch (error: any) {
+          console.error("Error getting redirect result:", error);
+          if (error.code) {
+            console.error("Error code:", error.code);
+          }
+          if (error.message) {
+            console.error("Error message:", error.message);
+          }
+        }
+      }
+      
+      // 通常の認証状態変更処理
       if (user) {
         console.log("User authenticated:", user.displayName);
         console.log("User provider data:", user.providerData);
@@ -129,7 +116,7 @@ export default function AuthProvider({
       console.log("AuthProvider unmounting, cleaning up listeners");
       unsubscribe();
     };
-  }, [pathname, router, isClient, isRedirectHandled]);
+  }, [pathname, router, isClient]);
 
   // クライアントサイドでのみレンダリング
   if (!isClient) {
