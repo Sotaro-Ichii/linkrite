@@ -21,10 +21,10 @@ export default function LandingPage() {
 
         {/* メインコンテンツ */}
         <main className="flex flex-col items-center justify-center flex-1 max-w-4xl">
-          <img src="/logo-icon.png" alt="LinqLet ロゴアイコン" className="h-28 w-auto mb-4 mx-auto" />
-          <h1 className="text-5xl sm:text-7xl font-bold text-gray-900 mb-6 animate-fadeInUp">
-            LinqLet
-          </h1>
+          <div className="flex items-center justify-center mb-6">
+            <img src="/logo-icon.png" alt="LinqLet ロゴアイコン" className="h-28 w-28 mr-4" />
+            <span className="text-5xl sm:text-7xl font-bold text-gray-900 tracking-tight">LinqLet</span>
+          </div>
 
           <p className="text-xl sm:text-2xl text-white/90 max-w-3xl mb-8 leading-relaxed animate-fadeInUp" style={{animationDelay: '0.2s'}}>
             あなたのプロジェクトに最適なパートナーを見つけ、<br className="hidden sm:block" />

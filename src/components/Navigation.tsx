@@ -19,13 +19,14 @@ export default function Navigation() {
           <div className="flex items-center">
             <Link 
               href="/home" 
-              className={`flex items-center space-x-3 transition-all duration-200 group ${
+              className={`flex items-center space-x-2 transition-all duration-200 group ${
                 isHomePage 
                   ? 'text-white hover:text-purple-200 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.4)]' 
                   : 'text-gray-900 hover:text-purple-600'
               }`}
             >
-              <img src="/logo.png" alt="LinqLet ロゴ" className="h-8 w-auto mr-2 inline-block align-middle" />
+              <img src="/logo-icon.png" alt="LinqLet ロゴ" className="h-7 w-7 mr-1 inline-block align-middle" />
+              <span className="font-bold text-lg align-middle tracking-tight">LinqLet</span>
               <div className={`p-2 rounded-xl transition-all duration-200 ${
                 isHomePage 
                   ? 'bg-white/20 group-hover:bg-white/30' 
