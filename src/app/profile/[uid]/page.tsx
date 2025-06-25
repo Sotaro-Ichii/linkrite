@@ -9,6 +9,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import Link from "next/link";
+import EditProfileButton from "./EditProfileButton";
 
 interface Props {
   params: Promise<{
@@ -43,6 +44,10 @@ export default async function ProfilePage({ params }: Props) {
           <h1 className="text-2xl font-bold">
             {userData?.displayName || "ユーザー"} のプロフィール
           </h1>
+          {/* 本人のみ編集ボタン表示 */}
+          {userData && (
+            <EditProfileButton userId={uid} />
+          )}
         </div>
 
         {/* プロフィール情報セクション */}
