@@ -16,6 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
+      <head>
+        <link rel="icon" href="/logo-icon.png" />
+      </head>
       <body>
         <AuthProvider>
           <Navigation />
