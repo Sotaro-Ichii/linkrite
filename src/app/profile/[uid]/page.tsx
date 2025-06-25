@@ -54,7 +54,37 @@ export default async function ProfilePage({ params }: Props) {
                 <p className="text-gray-600">{userData.bio}</p>
               </div>
             )}
-            
+            {/* 居住地・職業 */}
+            {(userData?.country || userData?.city || userData?.occupation) && (
+              <div className="flex flex-wrap gap-6">
+                {(userData?.country || userData?.city) && (
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-1">居住地</h3>
+                    <p className="text-gray-600">
+                      {[userData?.country, userData?.city].filter(Boolean).join("・")}
+                    </p>
+                  </div>
+                )}
+                {userData?.occupation && (
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-1">職業</h3>
+                    <p className="text-gray-600">{userData.occupation}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* スキル */}
+            {userData?.skills && (
+              <div>
+                <h3 className="font-semibold text-gray-700 mb-1">スキル</h3>
+                <div className="flex flex-wrap gap-2">
+                  {userData.skills.split(',').map((skill: string, i: number) => (
+                    <span key={i} className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">{skill.trim()}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* ウェブサイト・SNS */}
             <div className="flex flex-wrap gap-4">
               {userData?.website && (
                 <div>
@@ -69,10 +99,22 @@ export default async function ProfilePage({ params }: Props) {
                   </a>
                 </div>
               )}
-              
+              {userData?.linkedin && (
+                <div>
+                  <h3 className="font-semibold text-gray-700 mb-1">LinkedIn</h3>
+                  <a
+                    href={userData.linkedin.startsWith('http') ? userData.linkedin : `https://www.linkedin.com/in/${userData.linkedin}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {userData.linkedin}
+                  </a>
+                </div>
+              )}
               {userData?.twitter && (
                 <div>
-                  <h3 className="font-semibold text-gray-700 mb-1">Twitter</h3>
+                  <h3 className="font-semibold text-gray-700 mb-1">X（旧Twitter）</h3>
                   <a 
                     href={`https://twitter.com/${userData.twitter.replace('@', '')}`}
                     target="_blank" 
@@ -83,7 +125,19 @@ export default async function ProfilePage({ params }: Props) {
                   </a>
                 </div>
               )}
-              
+              {userData?.instagram && (
+                <div>
+                  <h3 className="font-semibold text-gray-700 mb-1">Instagram</h3>
+                  <a
+                    href={`https://instagram.com/${userData.instagram.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {userData.instagram}
+                  </a>
+                </div>
+              )}
               {userData?.github && (
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-1">GitHub</h3>
@@ -94,6 +148,32 @@ export default async function ProfilePage({ params }: Props) {
                     className="text-blue-600 hover:underline"
                   >
                     {userData.github}
+                  </a>
+                </div>
+              )}
+              {userData?.youtube && (
+                <div>
+                  <h3 className="font-semibold text-gray-700 mb-1">YouTube</h3>
+                  <a
+                    href={userData.youtube.startsWith('http') ? userData.youtube : `https://www.youtube.com/${userData.youtube}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {userData.youtube}
+                  </a>
+                </div>
+              )}
+              {userData?.tiktok && (
+                <div>
+                  <h3 className="font-semibold text-gray-700 mb-1">TikTok</h3>
+                  <a
+                    href={userData.tiktok.startsWith('http') ? userData.tiktok : `https://www.tiktok.com/@${userData.tiktok.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {userData.tiktok}
                   </a>
                 </div>
               )}

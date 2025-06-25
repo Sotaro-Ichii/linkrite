@@ -14,9 +14,17 @@ export default function EditProfilePage() {
   const [formData, setFormData] = useState({
     displayName: "",
     bio: "",
+    country: "",
+    city: "",
     website: "",
+    linkedin: "",
     twitter: "",
+    instagram: "",
     github: "",
+    youtube: "",
+    tiktok: "",
+    occupation: "",
+    skills: "",
   });
 
   useEffect(() => {
@@ -38,18 +46,34 @@ export default function EditProfilePage() {
           setFormData({
             displayName: userData.displayName || user.displayName || "",
             bio: userData.bio || "",
+            country: userData.country || "",
+            city: userData.city || "",
             website: userData.website || "",
+            linkedin: userData.linkedin || "",
             twitter: userData.twitter || "",
+            instagram: userData.instagram || "",
             github: userData.github || "",
+            youtube: userData.youtube || "",
+            tiktok: userData.tiktok || "",
+            occupation: userData.occupation || "",
+            skills: userData.skills || "",
           });
         } else {
           // ユーザードキュメントが存在しない場合は、デフォルト値を設定
           setFormData({
             displayName: user.displayName || "",
             bio: "",
+            country: "",
+            city: "",
             website: "",
+            linkedin: "",
             twitter: "",
+            instagram: "",
             github: "",
+            youtube: "",
+            tiktok: "",
+            occupation: "",
+            skills: "",
           });
         }
       } catch (error) {
@@ -58,9 +82,17 @@ export default function EditProfilePage() {
         setFormData({
           displayName: user.displayName || "",
           bio: "",
+          country: "",
+          city: "",
           website: "",
+          linkedin: "",
           twitter: "",
+          instagram: "",
           github: "",
+          youtube: "",
+          tiktok: "",
+          occupation: "",
+          skills: "",
         });
       }
       
@@ -75,6 +107,15 @@ export default function EditProfilePage() {
     
     if (!user) return;
     
+    if (!formData.displayName.trim()) {
+      alert("ユーザー名は必須です");
+      return;
+    }
+    if (!formData.skills.trim()) {
+      alert("スキルは必須です");
+      return;
+    }
+    
     setSaving(true);
     
     try {
@@ -86,21 +127,13 @@ export default function EditProfilePage() {
       if (userDocSnap.exists()) {
         // 既存のドキュメントを更新
         await updateDoc(userDocRef, {
-          displayName: formData.displayName,
-          bio: formData.bio,
-          website: formData.website,
-          twitter: formData.twitter,
-          github: formData.github,
+          ...formData,
           updatedAt: new Date(),
         });
       } else {
         // 新規ドキュメントを作成
         await setDoc(userDocRef, {
-          displayName: formData.displayName,
-          bio: formData.bio,
-          website: formData.website,
-          twitter: formData.twitter,
-          github: formData.github,
+          ...formData,
           email: user.email,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -141,7 +174,7 @@ export default function EditProfilePage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
-              表示名 *
+              ユーザー名 *
             </label>
             <input
               type="text"
@@ -151,7 +184,7 @@ export default function EditProfilePage() {
               onChange={handleChange}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="表示名を入力してください"
+              placeholder="ユーザー名を入力してください"
             />
           </div>
 
@@ -170,6 +203,68 @@ export default function EditProfilePage() {
             />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
+                居住国
+              </label>
+              <input
+                type="text"
+                id="country"
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="例: 日本"
+              />
+            </div>
+            <div>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                都市名
+              </label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="例: 東京"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="occupation" className="block text-sm font-medium text-gray-700 mb-2">
+              職業
+            </label>
+            <input
+              type="text"
+              id="occupation"
+              name="occupation"
+              value={formData.occupation}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="例: 動画編集者"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-2">
+              スキル（カンマ区切りで入力）*
+            </label>
+            <input
+              type="text"
+              id="skills"
+              name="skills"
+              value={formData.skills}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="例: Premiere Pro, After Effects, Photoshop"
+            />
+          </div>
+
           <div>
             <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">
               ウェブサイト
@@ -185,53 +280,100 @@ export default function EditProfilePage() {
             />
           </div>
 
-          <div>
-            <label htmlFor="twitter" className="block text-sm font-medium text-gray-700 mb-2">
-              Twitter
-            </label>
-            <input
-              type="text"
-              id="twitter"
-              name="twitter"
-              value={formData.twitter}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="@username"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-2">
+                LinkedIn
+              </label>
+              <input
+                type="text"
+                id="linkedin"
+                name="linkedin"
+                value={formData.linkedin}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="LinkedInのユーザー名またはURL"
+              />
+            </div>
+            <div>
+              <label htmlFor="twitter" className="block text-sm font-medium text-gray-700 mb-2">
+                X（旧Twitter）
+              </label>
+              <input
+                type="text"
+                id="twitter"
+                name="twitter"
+                value={formData.twitter}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="@username"
+              />
+            </div>
+            <div>
+              <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 mb-2">
+                Instagram
+              </label>
+              <input
+                type="text"
+                id="instagram"
+                name="instagram"
+                value={formData.instagram}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Instagramのユーザー名"
+              />
+            </div>
+            <div>
+              <label htmlFor="github" className="block text-sm font-medium text-gray-700 mb-2">
+                GitHub
+              </label>
+              <input
+                type="text"
+                id="github"
+                name="github"
+                value={formData.github}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="GitHubのユーザー名"
+              />
+            </div>
+            <div>
+              <label htmlFor="youtube" className="block text-sm font-medium text-gray-700 mb-2">
+                YouTube
+              </label>
+              <input
+                type="text"
+                id="youtube"
+                name="youtube"
+                value={formData.youtube}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="YouTubeのチャンネルURL"
+              />
+            </div>
+            <div>
+              <label htmlFor="tiktok" className="block text-sm font-medium text-gray-700 mb-2">
+                TikTok
+              </label>
+              <input
+                type="text"
+                id="tiktok"
+                name="tiktok"
+                value={formData.tiktok}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="TikTokのユーザー名"
+              />
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="github" className="block text-sm font-medium text-gray-700 mb-2">
-              GitHub
-            </label>
-            <input
-              type="text"
-              id="github"
-              name="github"
-              value={formData.github}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="username"
-            />
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {saving ? "保存中..." : "保存"}
-            </button>
-            
-            <button
-              type="button"
-              onClick={() => router.push(`/profile/${user.uid}`)}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              キャンセル
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full py-3 px-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50"
+          >
+            {saving ? "保存中..." : "保存"}
+          </button>
         </form>
       </div>
     </div>
