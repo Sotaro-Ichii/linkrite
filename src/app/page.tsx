@@ -21,9 +21,9 @@ export default function LandingPage() {
 
         {/* メインコンテンツ */}
         <main className="flex flex-col items-center justify-center flex-1 max-w-4xl">
-          <img src="/logo.png" alt="LinqLet ロゴ" className="h-24 w-auto mb-6 mx-auto" />
-          <h1 className="text-5xl sm:text-7xl font-bold text-white mb-6 animate-fadeInUp">
-            <span className="gradient-text">LinqLet</span>へようこそ！
+          <img src="/logo-icon.png" alt="LinqLet ロゴアイコン" className="h-28 w-auto mb-4 mx-auto" />
+          <h1 className="text-5xl sm:text-7xl font-bold text-gray-900 mb-6 animate-fadeInUp">
+            LinqLet
           </h1>
 
           <p className="text-xl sm:text-2xl text-white/90 max-w-3xl mb-8 leading-relaxed animate-fadeInUp" style={{animationDelay: '0.2s'}}>
