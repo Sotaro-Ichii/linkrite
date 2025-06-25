@@ -26,6 +26,7 @@ export default function HomePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
+  const [rewardCondition, setRewardCondition] = useState("");
   const [platform, setPlatform] = useState("YouTube");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("all");
@@ -84,6 +85,7 @@ export default function HomePage() {
         title,
         description,
         budget: parseInt(budget),
+        rewardCondition,
         platform,
         authorId: currentUser.uid,
         authorName: currentUser.displayName || "匿名",
@@ -95,6 +97,7 @@ export default function HomePage() {
       setTitle("");
       setDescription("");
       setBudget("");
+      setRewardCondition("");
       setPlatform("YouTube");
     } catch (error) {
       console.error("Error adding document: ", error);
@@ -266,6 +269,16 @@ export default function HomePage() {
                       onChange={(e) => setBudget(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">報酬条件</label>
+                    <input
+                      type="text"
+                      value={rewardCondition}
+                      onChange={(e) => setRewardCondition(e.target.value)}
+                      placeholder="例: 1000再生あたり"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <button type="submit" className="btn-primary">

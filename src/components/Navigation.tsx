@@ -25,6 +25,7 @@ export default function Navigation() {
                   : 'text-gray-900 hover:text-purple-600'
               }`}
             >
+              <img src="/logo.png" alt="LinqLet ロゴ" className="h-8 w-auto mr-2 inline-block align-middle" />
               <div className={`p-2 rounded-xl transition-all duration-200 ${
                 isHomePage 
                   ? 'bg-white/20 group-hover:bg-white/30' 
