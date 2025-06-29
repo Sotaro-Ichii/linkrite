@@ -80,3 +80,36 @@ export const createGoogleProvider = () => {
     return null;
   }
 };
+
+// --- DM Firestore設計例 ---
+// dmRoomsコレクション: 1対1チャット部屋
+//   - id: 自動生成 or ユーザーID連結
+//   - members: [uid1, uid2]
+//   - lastMessage: 最後のメッセージ内容
+//   - lastMessageAt: 最後のメッセージ送信時刻
+//   - lastMessageSender: 最後の送信者uid
+//   - unreadCount: { [uid]: number } // ユーザーごとの未読数
+//
+// dmRooms/{roomId}/messagesサブコレクション:
+//   - id: 自動生成
+//   - senderId: 送信者uid
+//   - text: 本文
+//   - createdAt: 送信時刻
+//   - imageUrl: 画像URL（画像対応時）
+
+export type DMRoom = {
+  id: string;
+  members: string[];
+  lastMessage: string;
+  lastMessageAt: any;
+  lastMessageSender: string;
+  unreadCount: { [uid: string]: number };
+};
+
+export type DMMessage = {
+  id: string;
+  senderId: string;
+  text: string;
+  createdAt: any;
+  imageUrl?: string;
+};

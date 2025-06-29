@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import Link from "next/link";
 import EditProfileButton from "./EditProfileButton";
+import DmButton from "./DmButton";
 
 interface Props {
   params: Promise<{
@@ -44,10 +45,11 @@ export default async function ProfilePage({ params }: Props) {
           <h1 className="text-2xl font-bold">
             {userData?.displayName || "ユーザー"} のプロフィール
           </h1>
-          {/* 本人のみ編集ボタン表示 */}
-          {userData && (
-            <EditProfileButton userId={uid} />
-          )}
+          {/* 編集ボタンとDMボタンを横並びで表示 */}
+          <div className="flex items-center">
+            {userData && <EditProfileButton userId={uid} />}
+            {userData && <DmButton targetUserId={uid} />}
+          </div>
         </div>
 
         {/* プロフィール情報セクション */}
