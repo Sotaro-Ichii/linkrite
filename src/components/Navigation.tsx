@@ -90,7 +90,7 @@ export default function Navigation() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M21.75 6.75L12 12.75m0 0L2.25 6.75m9.75 6V3.75m0 15.75v-6"
+                      d="M3.75 21l16.5-9L3.75 3v7.5l11.25 1.5-11.25 1.5V21z"
                     />
                   </svg>
                 </Link>
