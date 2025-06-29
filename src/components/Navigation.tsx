@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -13,6 +13,7 @@ export default function Navigation() {
   const isFeedPage = pathname === "/home" || pathname.includes("/feed");
   const isApplicationsPage = pathname === "/applications";
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const router = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -20,6 +21,11 @@ export default function Navigation() {
     });
     return () => unsubscribe();
   }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    window.location.href = "/";
+  };
 
   return (
     <nav className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ${
@@ -127,6 +133,14 @@ export default function Navigation() {
                   トップページ
                 </Link>
               </>
+            )}
+            {currentUser && (
+              <button
+                onClick={handleLogout}
+                className="ml-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-red-500 hover:text-white transition"
+              >
+                ログアウト
+              </button>
             )}
           </div>
         </div>
