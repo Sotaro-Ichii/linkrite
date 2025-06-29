@@ -76,7 +76,7 @@ export default function DMListPage() {
                     className="w-10 h-10 rounded-full object-cover bg-gray-200"
                   />
                   <div>
-                    <div className="font-semibold">{room.otherUser?.displayName || "ユーザー"}</div>
+                    <div className="font-semibold">{room.otherUser?.displayName || "未設定"}</div>
                     <div className="text-xs text-gray-500 line-clamp-1 max-w-[180px]">
                       {room.lastMessage || "まだメッセージがありません"}
                     </div>
