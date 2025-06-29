@@ -11,6 +11,7 @@ export default function Navigation() {
   const isHomePage = pathname === "/";
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const isFeedPage = pathname === "/home" || pathname.includes("/feed");
+  const isApplicationsPage = pathname === "/applications";
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
@@ -83,6 +84,18 @@ export default function Navigation() {
                 >
                   フィード
                 </Link>
+                {currentUser && (
+                  <Link 
+                    href="/applications" 
+                    className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                      isApplicationsPage
+                        ? 'bg-purple-100 text-purple-600 font-medium'
+                        : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                    }`}
+                  >
+                    応募一覧
+                  </Link>
+                )}
                 <Link 
                   href="/" 
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${

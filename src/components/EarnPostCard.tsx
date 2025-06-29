@@ -1,10 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { auth, db } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
 
 export default function EarnPostCard({ post }: { post: any }) {
   const [imageError, setImageError] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [hasApplied, setHasApplied] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [applicationMessage, setApplicationMessage] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 応募状態の確認
+  useEffect(() => {
+    if (!currentUser || !post.id) return;
+
+    const checkApplicationStatus = async () => {
+      const q = query(
+        collection(db, "applications"),
+        where("applicantId", "==", currentUser.uid),
+        where("postId", "==", post.id)
+      );
+      
+      const snapshot = await getDocs(q);
+      setHasApplied(!snapshot.empty);
+    };
+
+    checkApplicationStatus();
+  }, [currentUser, post.id]);
 
   const handleImageError = () => {
     setImageError(true);
@@ -33,6 +66,47 @@ export default function EarnPostCard({ post }: { post: any }) {
         return "platform-badge platform-instagram";
       default:
         return "platform-badge bg-gray-500";
+    }
+  };
+
+  // 応募処理
+  const handleApply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("ログインしてください。");
+      return;
+    }
+
+    if (!applicationMessage.trim()) {
+      alert("応募メッセージを入力してください。");
+      return;
+    }
+
+    setIsApplying(true);
+    try {
+      await addDoc(collection(db, "applications"), {
+        postId: post.id,
+        postTitle: post.title,
+        postBudget: post.budget,
+        postPlatform: post.platform,
+        applicantId: currentUser.uid,
+        applicantName: currentUser.displayName || "匿名",
+        applicantPhotoURL: currentUser.photoURL || "",
+        status: 'pending',
+        message: applicationMessage,
+        appliedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      setHasApplied(true);
+      setShowApplicationForm(false);
+      setApplicationMessage("");
+      alert("応募が完了しました！");
+    } catch (error) {
+      console.error("Error applying:", error);
+      alert("応募に失敗しました。");
+    } finally {
+      setIsApplying(false);
     }
   };
 
@@ -98,17 +172,73 @@ export default function EarnPostCard({ post }: { post: any }) {
           </div>
         </div>
 
+        {/* 応募フォーム */}
+        {showApplicationForm && (
+          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+            <form onSubmit={handleApply} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  応募メッセージ
+                </label>
+                <textarea
+                  value={applicationMessage}
+                  onChange={(e) => setApplicationMessage(e.target.value)}
+                  placeholder="あなたの経験やスキルについて教えてください..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  required
+                />
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  type="submit"
+                  disabled={isApplying}
+                  className="flex-1 btn-primary text-sm px-4 py-2 disabled:opacity-50"
+                >
+                  {isApplying ? "応募中..." : "応募する"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowApplicationForm(false);
+                    setApplicationMessage("");
+                  }}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
         {/* フッター */}
         <div className="flex justify-between items-center pt-4 border-t border-gray-100">
           <span className="text-xs text-gray-500">
             {post.createdAt?.toDate ? post.createdAt.toDate().toLocaleDateString() : "日付不明"}
           </span>
-          <Link 
-            href={`/earn/${post.id}`}
-            className="btn-primary text-sm px-4 py-2"
-          >
-            詳細を見る
-          </Link>
+          <div className="flex space-x-2">
+            <Link 
+              href={`/earn/${post.id}`}
+              className="btn-ghost text-sm px-4 py-2"
+            >
+              詳細を見る
+            </Link>
+            {currentUser && currentUser.uid !== post.authorId && (
+              hasApplied ? (
+                <span className="px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium">
+                  応募済み
+                </span>
+              ) : (
+                <button
+                  onClick={() => setShowApplicationForm(true)}
+                  className="btn-primary text-sm px-4 py-2"
+                >
+                  応募する
+                </button>
+              )
+            )}
+          </div>
         </div>
       </div>
     </div>
