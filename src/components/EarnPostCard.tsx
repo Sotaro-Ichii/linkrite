@@ -13,31 +13,48 @@ export default function EarnPostCard({ post }: { post: any }) {
   const [isApplying, setIsApplying] = useState(false);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [applicationMessage, setApplicationMessage] = useState("");
+  const [applicationChecked, setApplicationChecked] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      // ユーザーが変わったら応募状態の確認をリセット
+      setApplicationChecked(false);
+      setHasApplied(false);
     });
     return () => unsubscribe();
   }, []);
 
-  // 応募状態の確認
+  // 応募状態の確認（一度だけ実行）
   useEffect(() => {
-    if (!currentUser || !post.id) return;
+    if (!currentUser || !post.id || applicationChecked) return;
 
     const checkApplicationStatus = async () => {
-      const q = query(
-        collection(db, "applications"),
-        where("applicantId", "==", currentUser.uid),
-        where("postId", "==", post.id)
-      );
-      
-      const snapshot = await getDocs(q);
-      setHasApplied(!snapshot.empty);
+      try {
+        // より効率的なクエリ：applicantIdのみで絞り込み、クライアントサイドでpostIdを確認
+        const q = query(
+          collection(db, "applications"),
+          where("applicantId", "==", currentUser.uid)
+        );
+        
+        const snapshot = await getDocs(q);
+        const hasAppliedToThisPost = snapshot.docs.some(doc => {
+          const data = doc.data();
+          return data.postId === post.id;
+        });
+        
+        setHasApplied(hasAppliedToThisPost);
+        setApplicationChecked(true);
+      } catch (error) {
+        console.error("Error checking application status:", error);
+        // エラーが発生した場合は応募状態をfalseに設定
+        setHasApplied(false);
+        setApplicationChecked(true);
+      }
     };
 
     checkApplicationStatus();
-  }, [currentUser, post.id]);
+  }, [currentUser, post.id, applicationChecked]);
 
   const handleImageError = () => {
     setImageError(true);
@@ -98,7 +115,9 @@ export default function EarnPostCard({ post }: { post: any }) {
         updatedAt: serverTimestamp(),
       });
 
+      // 応募状態を即座に更新
       setHasApplied(true);
+      setApplicationChecked(true);
       setShowApplicationForm(false);
       setApplicationMessage("");
       alert("応募が完了しました！");

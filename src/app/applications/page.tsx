@@ -44,10 +44,10 @@ export default function ApplicationsPage() {
   useEffect(() => {
     if (!currentUser) return;
 
+    // インデックスエラーを避けるため、シンプルなクエリを使用
     const q = query(
       collection(db, "applications"),
-      where("applicantId", "==", currentUser.uid),
-      orderBy("appliedAt", "desc")
+      where("applicantId", "==", currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -55,6 +55,14 @@ export default function ApplicationsPage() {
         id: doc.id,
         ...doc.data(),
       })) as Application[];
+      
+      // クライアントサイドでソート
+      applicationsData.sort((a, b) => {
+        const dateA = a.appliedAt?.toDate ? a.appliedAt.toDate() : new Date(a.appliedAt);
+        const dateB = b.appliedAt?.toDate ? b.appliedAt.toDate() : new Date(b.appliedAt);
+        return dateB.getTime() - dateA.getTime(); // 降順（新しい順）
+      });
+      
       setApplications(applicationsData);
       setLoading(false);
     });
