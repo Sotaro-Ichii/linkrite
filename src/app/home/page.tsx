@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import EarnPostCard from "@/components/EarnPostCard";
 import { createGoogleProvider } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -43,6 +44,8 @@ export default function HomePage() {
   const [feedImage, setFeedImage] = useState<File | null>(null);
   const [feedImagePreview, setFeedImagePreview] = useState<string>("");
   const [commentText, setCommentText] = useState<{ [key: string]: string }>({});
+
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -264,34 +267,19 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* ヘッダー */}
-        <div className="card p-6 mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold gradient-text mb-2">LinqLet</h1>
-              <p className="text-gray-600">クリエイターと編集者をつなぐプラットフォーム</p>
-            </div>
-            {currentUser ? (
-              <div className="flex items-center space-x-4">
-                <Link href={`/profile/${currentUser.uid}`} className="btn-ghost">
-                  <div className="flex items-center space-x-2">
-                    <img 
-                      src={currentUser.photoURL || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%23e5e7eb'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='%236b7280' font-size='12'%3E👤%3C/text%3E%3C/svg%3E"} 
-                      alt="Profile" 
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span>{currentUser.displayName}</span>
-                  </div>
-                </Link>
-                <button onClick={handleLogout} className="btn-secondary">
-                  ログアウト
-                </button>
-              </div>
-            ) : (
-              <button onClick={handleGoogleLogin} className="btn-primary">
-                Googleでログイン
-              </button>
-            )}
+        <div className="card p-6 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold gradient-text mb-2">LinqLet</h1>
+            <p className="text-gray-600">クリエイターと編集者をつなぐプラットフォーム</p>
           </div>
+          {currentUser && (
+            <button
+              className="btn-primary text-lg px-8 py-3"
+              onClick={() => router.push("/home/post")}
+            >
+              投稿
+            </button>
+          )}
         </div>
 
         {/* タブ */}
@@ -578,72 +566,6 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-
-            {/* 投稿フォーム */}
-            {currentUser && (
-              <div className="card p-6 mb-8">
-                <h2 className="text-xl font-semibold mb-4">新しい案件を投稿</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">タイトル</label>
-                      <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">プラットフォーム</label>
-                      <select
-                        value={platform}
-                        onChange={(e) => setPlatform(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        <option>YouTube</option>
-                        <option>TikTok</option>
-                        <option>Instagram</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">仕事内容</label>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">予算（円）</label>
-                    <input
-                      type="number"
-                      value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">報酬条件</label>
-                    <input
-                      type="text"
-                      value={rewardCondition}
-                      onChange={(e) => setRewardCondition(e.target.value)}
-                      placeholder="例: 1000再生あたり"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <button type="submit" className="btn-primary">
-                    投稿する
-                  </button>
-                </form>
-              </div>
-            )}
 
             {/* 案件一覧 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
