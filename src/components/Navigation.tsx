@@ -74,6 +74,26 @@ export default function Navigation() {
           <div className="flex items-center space-x-4">
             {!isHomePage && (
               <>
+                <Link
+                  href="/dm"
+                  className="p-2 rounded-lg transition-all duration-200 hover:bg-purple-50"
+                  title="ダイレクトメッセージ"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 text-purple-500"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21.75 6.75L12 12.75m0 0L2.25 6.75m9.75 6V3.75m0 15.75v-6"
+                    />
+                  </svg>
+                </Link>
                 <Link 
                   href="/home" 
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${
